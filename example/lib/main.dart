@@ -112,6 +112,21 @@ class _MyAppState extends State<MyApp> {
                   color: Colors.redAccent,
                 ),
               ),
+              SizedBox(
+                height: divideHeight,
+              ),
+              Center(
+                child: FlatButton(
+                  onPressed: () {},
+                  child: Text("调用dll"),
+                  minWidth: 200,
+                  height: 50,
+                  color: Colors.redAccent,
+                ),
+              ),
+              SizedBox(
+                height: divideHeight,
+              ),
             ],
           )),
     );
