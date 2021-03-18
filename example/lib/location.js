@@ -15,7 +15,7 @@ function getLocation () {
        },{enableHighAccuracy: true})
 }
 
-function alertMessage(text) {
+window.alertMessage=function (text) {
     alert(text)
 }
 

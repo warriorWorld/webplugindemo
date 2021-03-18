@@ -81,7 +81,7 @@ class WebplugindemoWeb {
 
   //这里调用的是自己的js,位于location.js.需要在index.html中声明
   void showJSAlert(String message) {
-    js.context.callMethod("alertMessage", [message]);
+    js.context.callMethod("alert", [message]);
   }
 
   void showAlert(String message) {

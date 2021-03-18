@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:js/js.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:webplugindemo/webplugindemo.dart';
 import 'package:webplugindemo_example/jshome.dart';
+import 'package:webplugindemo_example/js_caller.dart';
 
 void main() {
   runApp(MyApp());
@@ -117,8 +120,10 @@ class _MyAppState extends State<MyApp> {
               ),
               Center(
                 child: FlatButton(
-                  onPressed: () {},
-                  child: Text("调用dll"),
+                  onPressed: () {
+                    showJSAlert("message");
+                  },
+                  child: Text("调用指定JS"),
                   minWidth: 200,
                   height: 50,
                   color: Colors.redAccent,
@@ -127,9 +132,29 @@ class _MyAppState extends State<MyApp> {
               SizedBox(
                 height: divideHeight,
               ),
+              Center(
+                child: FlatButton(
+                  onPressed: () {
+                    testThread();
+                    // print(syncFibonacci(60));
+                  },
+                  child: Text("测试线程"),
+                  minWidth: 200,
+                  height: 50,
+                  color: Colors.redAccent,
+                ),
+              ),
             ],
           )),
     );
+  }
+
+  void testThread() async {
+    print(await compute(syncFibonacci, 60));
+  }
+
+  int syncFibonacci(int n) {
+    return n < 2 ? n : syncFibonacci(n - 2) + syncFibonacci(n - 1);
   }
 
   void getMultiplicationResult() async {
@@ -145,5 +170,10 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _calculResult = result;
     });
+  }
+
+  void showJSAlert(String message) async {
+    String result = await showJSDialog(message);
+    print(result);
   }
 }
