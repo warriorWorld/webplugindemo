@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TreasureChestBean {
+  int id;
   Offset position;
   int duration;
   double scale;
