@@ -25,6 +25,7 @@ dependencies:
   cupertino_icons: ^1.0.1
   webview_flutter: ^0.3.15+1 #flutter官方webview
   fluttertoast: ^3.0.4 #toast
+  toast: ^0.1.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

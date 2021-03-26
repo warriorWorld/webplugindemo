@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
 import 'package:webplugindemo_example/treasurechest_bean.dart';
 
 import 'chest.dart';
@@ -49,6 +50,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
       int startValidMS = -y ~/ speed;
       int endValidMS = (screenHeight - y - chestMaxHeight * scale) ~/ speed;
       print("startValidMs:$startValidMS ,endValidMs:$endValidMS");
+      print("y:$y,screenHeight:$screenHeight");
       treasure.position = Offset(x, y);
       treasure.duration = duration;
       treasure.scale = scale;
@@ -57,6 +59,16 @@ class _AnimationDemoState extends State<AnimationDemo> {
       treasure.endValidMS=endValidMS;
       chestList.add(treasure);
     }
+    //按尺寸大小排序,为了达到大的盖住小的效果
+    chestList.sort((a,b){
+      if(a.scale>b.scale){
+        return 1;
+      }else if(a.scale<b.scale){
+        return -1;
+      }else{
+        return 0;
+      }
+    });
   }
 
   void _reset() {
@@ -123,6 +135,10 @@ class _AnimationDemoState extends State<AnimationDemo> {
         print("add one id:${item.id}");
         validList.add(item);
       }
+    }
+    if(validList.length==0){
+      Toast.show("没有宝箱可以抢!", context);
+      return;
     }
     int randomI = _random.nextInt(validList.length);
     TreasureChestBean randomChest = validList[randomI];
