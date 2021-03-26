@@ -1,15 +1,22 @@
-import 'package:flutter/foundation.dart';
-import 'package:js/js.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webplugindemo/webplugindemo.dart';
-import 'package:webplugindemo_example/jshome.dart';
+import 'package:webplugindemo_example/animation_demo.dart';
 import 'package:webplugindemo_example/js_caller.dart';
 
+int syncFibonacci(int n) {
+  return n < 2 ? n : syncFibonacci(n - 2) + syncFibonacci(n - 1);
+}
+
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    home: Scaffold(
+      body: new AnimationDemo(),
+    ),
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -136,7 +143,8 @@ class _MyAppState extends State<MyApp> {
                 child: FlatButton(
                   onPressed: () {
                     testThread();
-                    // print(syncFibonacci(60));
+                    // print(syncFibonacci(40));
+                    print("阻塞测试");
                   },
                   child: Text("测试线程"),
                   minWidth: 200,
@@ -150,11 +158,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   void testThread() async {
-    print(await compute(syncFibonacci, 60));
+    print(await compute(syncFibonacci, 40));
   }
 
-  int syncFibonacci(int n) {
-    return n < 2 ? n : syncFibonacci(n - 2) + syncFibonacci(n - 1);
+  Future<int> testWait() {
+    var res = syncFibonacci(40);
+    return Future.value(res);
   }
 
   void getMultiplicationResult() async {
