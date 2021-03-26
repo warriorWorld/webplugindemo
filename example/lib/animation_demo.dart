@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,9 @@ class _AnimationDemoState extends State<AnimationDemo> {
   double screenWidth;
   double chestMaxWidth = 100;
   double chestMaxHeight = 120;
+  Timer timer;
+  int tickDurantion = 100;
+  int currentTick = 0;
 
   @override
   void initState() {
@@ -33,12 +37,17 @@ class _AnimationDemoState extends State<AnimationDemo> {
     screenWidth = MediaQuery.of(context).size.width;
     for (int i = 0; i < 10; i++) {
       TreasureChestBean treasure = new TreasureChestBean();
-      double x = _random.nextDouble() * (screenWidth-chestMaxWidth/2);
+      double x = _random.nextDouble() * (screenWidth - chestMaxWidth);
       double y = _random.nextDouble() * screenHeight;
       int duration = 12 + _random.nextInt(6);
       double scale = (60 + _random.nextInt(40)) / 100;
       y = y / 2;
       y = -y - chestMaxHeight;
+      //unit d/millsecond
+      double speed = (screenHeight - y) / (duration * 1000);
+      int startValidMS = -y ~/ speed;
+      int endValidMS = (screenHeight - y - chestMaxHeight * scale) ~/ speed;
+      print("startValidMs:$startValidMS ,endValidMs:$endValidMS");
       treasure.position = Offset(x, y);
       treasure.duration = duration;
       treasure.scale = scale;
@@ -70,6 +79,9 @@ class _AnimationDemoState extends State<AnimationDemo> {
       stopScroll = true;
       chestWidgets.clear();
       chestList.clear();
+      timer.cancel();
+      timer = null;
+      currentTick = 0;
     });
   }
 
@@ -97,11 +109,38 @@ class _AnimationDemoState extends State<AnimationDemo> {
               },
               child: Text("测试")),
         ),
+        Positioned(
+          top: 30,
+          right: 90,
+          child: FlatButton(
+              minWidth: 80,
+              height: 50,
+              color: Colors.blue,
+              onPressed: () {
+                _getOneValidChest();
+              },
+              child: Text("抢答")),
+        ),
         Stack(
           children: chestWidgets,
         )
       ],
     );
+  }
+
+  void _getOneValidChest() {
+    List<TreasureChestBean> validList = [];
+    for (int i = 0; i < chestList.length; i++) {
+      TreasureChestBean item = chestList[i];
+      if (!item.opened &&
+          currentTick < item.endValidMS &&
+          currentTick > item.startValidMS) {
+        validList.add(item);
+      }
+    }
+    int randomI=_random.nextInt(validList.length);
+    TreasureChestBean randomChest=validList[randomI];
+
   }
 
   void _firstScroll() {
@@ -119,11 +158,20 @@ class _AnimationDemoState extends State<AnimationDemo> {
         .animateTo(listController.offset + 800,
             duration: Duration(milliseconds: 1000), curve: Curves.easeInOutQuad)
         .then((value) {
-      setState(() {
-        chestWidgets.clear();
-        _getTresureWidgets(true);
-      });
+      _startDropTresure();
       _infinityScroll();
+    });
+  }
+
+  void _startDropTresure() {
+    setState(() {
+      chestWidgets.clear();
+      _getTresureWidgets(true);
+    });
+    timer =
+        new Timer.periodic(new Duration(milliseconds: tickDurantion), (timer) {
+      currentTick = tickDurantion * timer.tick;
+      print(currentTick);
     });
   }
 
@@ -145,7 +193,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
       title: Image.asset(
-        'assets/bg_cloud.png',
+        'assets/bg_cloud1.png',
         fit: BoxFit.fitWidth,
         alignment: Alignment.topCenter,
       ));
@@ -153,7 +201,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
       title: Image.asset(
-        'assets/cloud_repeat.png',
+        'assets/cloud_repeat1.png',
         fit: BoxFit.fitWidth,
         alignment: Alignment.topCenter,
       ));
