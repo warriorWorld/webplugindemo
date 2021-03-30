@@ -21,12 +21,12 @@ class _ChestWidgetState extends State<ChestWidget>
   Animation<double> chestScaleAnim;
   Animation<double> avatarScaleAnim;
   Animation<double> scoreScaleAnim;
+  Animation<double> chestOpacityAnim;
   Animation<double> avatarOpacityAnim;
   String chestAsset = 'assets/treasurechest.png';
   double chestWidth;
   double chestHeight;
   double avatarSize = 60;
-  double chestOpacity = 1;
 
   @override
   void initState() {
@@ -34,27 +34,30 @@ class _ChestWidgetState extends State<ChestWidget>
     reset();
     chestScaleController =
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
-    animController =
-        AnimationController(duration: Duration(milliseconds: 4000), vsync: this);
+    animController = AnimationController(
+        duration: Duration(milliseconds: 4000), vsync: this);
     chestScaleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         setState(() {
           chestAsset = 'assets/treasurechest_open.png';
           // chestWidth = chestWidth * 1.66;
           // chestHeight = chestHeight * 1.06;
-          chestOpacity = 0;
           animController.forward();
         });
       }
     });
     chestScaleAnim = Tween<double>(begin: 1, end: 1.2).animate(CurvedAnimation(
         parent: chestScaleController, curve: Curves.decelerate));
+
     avatarScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: animController,
         curve: Interval(0, 0.1, curve: Curves.decelerate)));
     scoreScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: animController,
         curve: Interval(0.1, 0.2, curve: Curves.decelerate)));
+    chestOpacityAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(
+        parent: animController,
+        curve: Interval(0.2, 0.3, curve: Curves.decelerate)));
     avatarOpacityAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(
         parent: animController,
         curve: Interval(0.9, 1, curve: Curves.decelerate)));
@@ -77,7 +80,6 @@ class _ChestWidgetState extends State<ChestWidget>
     chestWidth = widget.chestMaxWidth * widget.chestBean.scale;
     chestHeight = widget.chestMaxHeight * widget.chestBean.scale;
     avatarSize = avatarSize * widget.chestBean.scale;
-    chestOpacity = 1;
   }
 
   @override
@@ -122,9 +124,8 @@ class _ChestWidgetState extends State<ChestWidget>
           child: Stack(children: [
             Positioned(
               top: 0,
-              child: AnimatedOpacity(
-                opacity: chestOpacity,
-                duration: Duration(milliseconds: 500),
+              child: FadeTransition(
+                opacity: chestOpacityAnim,
                 child: ScaleTransition(
                   scale: chestScaleAnim,
                   alignment: Alignment.center,

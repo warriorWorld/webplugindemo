@@ -2,18 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3604282e-057e-47f1-a4ca-d5fa7a781ce0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/avatar.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_0.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_6.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_7.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_8.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_9.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/treasurechest_score_add.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/chest.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/chest.dart" afterDir="false" />
     </list>
