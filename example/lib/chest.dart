@@ -17,7 +17,11 @@ class ChestWidget extends StatefulWidget {
 class _ChestWidgetState extends State<ChestWidget>
     with TickerProviderStateMixin {
   AnimationController chestScaleController;
-  Animation<double> scaleAnim;
+  AnimationController animController;
+  Animation<double> chestScaleAnim;
+  Animation<double> avatarScaleAnim;
+  Animation<double> scoreScaleAnim;
+  Animation<double> avatarOpacityAnim;
   String chestAsset = 'assets/treasurechest.png';
   double chestWidth;
   double chestHeight;
@@ -30,6 +34,8 @@ class _ChestWidgetState extends State<ChestWidget>
     reset();
     chestScaleController =
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
+    animController =
+        AnimationController(duration: Duration(milliseconds: 4000), vsync: this);
     chestScaleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         setState(() {
@@ -37,11 +43,21 @@ class _ChestWidgetState extends State<ChestWidget>
           // chestWidth = chestWidth * 1.66;
           // chestHeight = chestHeight * 1.06;
           chestOpacity = 0;
+          animController.forward();
         });
       }
     });
-    scaleAnim = Tween<double>(begin: 1, end: 1.2).animate(CurvedAnimation(
+    chestScaleAnim = Tween<double>(begin: 1, end: 1.2).animate(CurvedAnimation(
         parent: chestScaleController, curve: Curves.decelerate));
+    avatarScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: animController,
+        curve: Interval(0, 0.1, curve: Curves.decelerate)));
+    scoreScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: animController,
+        curve: Interval(0.1, 0.2, curve: Curves.decelerate)));
+    avatarOpacityAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(
+        parent: animController,
+        curve: Interval(0.9, 1, curve: Curves.decelerate)));
   }
 
   void open() {
@@ -70,40 +86,78 @@ class _ChestWidgetState extends State<ChestWidget>
       top: widget.chestBean.position.dy,
       left: widget.chestBean.position.dx,
       duration: Duration(seconds: widget.chestBean.duration),
-      child: Container(
-        width: chestWidth,
-        height: chestHeight * 2,
-        child: Stack(children: [
-          Positioned(
-            top: 0,
-            child: AnimatedOpacity(
-              opacity: chestOpacity,
-              duration: Duration(milliseconds: 500),
-              child: ScaleTransition(
-                scale: scaleAnim,
-                alignment: Alignment.center,
-                child: Image.asset(
-                  chestAsset,
-                  width: chestWidth,
-                  height: chestHeight,
-                  fit: BoxFit.contain,
+      child: Column(children: [
+        FadeTransition(
+          opacity: avatarOpacityAnim,
+          child: ScaleTransition(
+            scale: scoreScaleAnim,
+            alignment: Alignment.center,
+            child: Row(
+              children: [
+                Image.asset(
+                  'treasurechest_score_add.png',
+                  width: 10,
+                  height: 20,
+                  fit: BoxFit.fitWidth,
+                ),
+                Image.asset(
+                  'treasurechest_score_2.png',
+                  width: 10,
+                  height: 20,
+                  fit: BoxFit.fitWidth,
+                ),
+                Image.asset(
+                  'treasurechest_score_0.png',
+                  width: 10,
+                  height: 20,
+                  fit: BoxFit.fitWidth,
+                )
+              ],
+            ),
+          ),
+        ),
+        Container(
+          width: chestWidth,
+          height: chestHeight * 2,
+          child: Stack(children: [
+            Positioned(
+              top: 0,
+              child: AnimatedOpacity(
+                opacity: chestOpacity,
+                duration: Duration(milliseconds: 500),
+                child: ScaleTransition(
+                  scale: chestScaleAnim,
                   alignment: Alignment.center,
+                  child: Image.asset(
+                    chestAsset,
+                    width: chestWidth,
+                    height: chestHeight,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            left: chestWidth / 2 - avatarSize / 2,
-            child: Image.asset(
-              'treasurechest_avatarframe.png',
-              width: avatarSize,
-              height: avatarSize,
-              fit: BoxFit.fitHeight,
-              alignment: Alignment.center,
+            Positioned(
+              left: chestWidth / 2 - avatarSize / 2,
+              child: FadeTransition(
+                opacity: avatarOpacityAnim,
+                child: ScaleTransition(
+                  scale: avatarScaleAnim,
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'avatar.png',
+                    width: avatarSize,
+                    height: avatarSize,
+                    fit: BoxFit.fitHeight,
+                    alignment: Alignment.center,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ]),
-      ),
+          ]),
+        ),
+      ]),
     );
   }
 }
