@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:webplugindemo_example/treasurechest_bean.dart';
 
 class ChestWidget extends StatefulWidget {
-  final double chestMaxWidth = 100;
-  final double chestMaxHeight = 120;
   TreasureChestBean chestBean;
 
   ChestWidget(TreasureChestBean bean) {
@@ -18,6 +16,8 @@ class _ChestWidgetState extends State<ChestWidget>
     with TickerProviderStateMixin {
   AnimationController chestScaleController;
   AnimationController animController;
+  AnimationController ufoDropController;
+  Animation<double> ufoDropAnim;
   Animation<double> chestScaleAnim;
   Animation<double> avatarScaleAnim;
   Animation<double> scoreScaleAnim;
@@ -36,6 +36,10 @@ class _ChestWidgetState extends State<ChestWidget>
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
     animController = AnimationController(
         duration: Duration(milliseconds: 4000), vsync: this);
+    ufoDropController =
+        AnimationController(duration: Duration(milliseconds: 500), vsync: this);
+    ufoDropAnim = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: ufoDropController, curve: Curves.decelerate));
     chestScaleController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         setState(() {
@@ -64,6 +68,7 @@ class _ChestWidgetState extends State<ChestWidget>
   }
 
   void open() {
+    widget.chestBean.ufoDrop = false;
     chestScaleController.forward();
   }
 
@@ -73,12 +78,16 @@ class _ChestWidgetState extends State<ChestWidget>
     if (widget.chestBean.opened) {
       open();
     }
+    if (widget.chestBean.ufoDrop) {
+      widget.chestBean.ufoDrop = false;
+      ufoDropController.forward();
+    }
   }
 
   void reset() {
     chestAsset = 'assets/treasurechest.png';
-    chestWidth = widget.chestMaxWidth * widget.chestBean.scale;
-    chestHeight = widget.chestMaxHeight * widget.chestBean.scale;
+    chestWidth = widget.chestBean.chestMaxWidth * widget.chestBean.scale;
+    chestHeight = widget.chestBean.chestMaxHeight * widget.chestBean.scale;
     avatarSize = avatarSize * widget.chestBean.scale;
   }
 
@@ -126,17 +135,7 @@ class _ChestWidgetState extends State<ChestWidget>
               top: 0,
               child: FadeTransition(
                 opacity: chestOpacityAnim,
-                child: ScaleTransition(
-                  scale: chestScaleAnim,
-                  alignment: Alignment.center,
-                  child: Image.asset(
-                    chestAsset,
-                    width: chestWidth,
-                    height: chestHeight,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.center,
-                  ),
-                ),
+                child: getChest(),
               ),
             ),
             Positioned(
@@ -160,5 +159,37 @@ class _ChestWidgetState extends State<ChestWidget>
         ),
       ]),
     );
+  }
+
+  Widget getChest() {
+    if (widget.chestBean.id == 0) {
+      return ScaleTransition(
+        alignment: Alignment.topCenter,
+        scale: ufoDropAnim,
+        child: ScaleTransition(
+          scale: chestScaleAnim,
+          alignment: Alignment.center,
+          child: Image.asset(
+            chestAsset,
+            width: chestWidth,
+            height: chestHeight,
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+          ),
+        ),
+      );
+    } else {
+      return ScaleTransition(
+        scale: chestScaleAnim,
+        alignment: Alignment.center,
+        child: Image.asset(
+          chestAsset,
+          width: chestWidth,
+          height: chestHeight,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        ),
+      );
+    }
   }
 }
