@@ -48,13 +48,13 @@ class _AnimationDemoState extends State<AnimationDemo> {
       TreasureChestBean treasure = new TreasureChestBean();
       double x = _random.nextDouble() * (screenWidth - chestMaxWidth);
       double y = _random.nextDouble() * screenHeight;
-      int duration = 12 + _random.nextInt(6);
+      int duration = (12 + _random.nextInt(6)) * 1000;
       double scale = (60 + _random.nextInt(40)) / 100;
       y = y / 2;
       y = -y - chestMaxHeight;
       //unit d/millsecond
-      double speed = (screenHeight - y) / (duration * 1000);
-      int startValidMS = -y ~/ speed;//等价于(-y / speed).toInt()
+      double speed = (screenHeight - y) / (duration);
+      int startValidMS = -y ~/ speed; //等价于(-y / speed).toInt()
       int endValidMS = (screenHeight - y - chestMaxHeight * scale) ~/ speed;
       print("startValidMs:$startValidMS ,endValidMs:$endValidMS");
       print("y:$y,screenHeight:$screenHeight");
@@ -150,6 +150,9 @@ class _AnimationDemoState extends State<AnimationDemo> {
     int randomI = _random.nextInt(validList.length);
     TreasureChestBean randomChest = validList[randomI];
     randomChest.opened = true;
+    randomChest.position =
+        Offset(randomChest.position.dx, randomChest.position.dy - (60 + 20));//头像和分数的高度
+    randomChest.duration = randomChest.duration - currentTick;
     for (int i = 0; i < chestList.length; i++) {
       if (chestList[i].id == randomChest.id) {
         print("selected one id:${randomChest.id}");

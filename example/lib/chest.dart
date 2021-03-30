@@ -87,7 +87,7 @@ class _ChestWidgetState extends State<ChestWidget>
     return AnimatedPositioned(
       top: widget.chestBean.position.dy,
       left: widget.chestBean.position.dx,
-      duration: Duration(seconds: widget.chestBean.duration),
+      duration: Duration(milliseconds: widget.chestBean.duration),
       child: Column(children: [
         FadeTransition(
           opacity: avatarOpacityAnim,
