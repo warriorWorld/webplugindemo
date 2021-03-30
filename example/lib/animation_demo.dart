@@ -25,7 +25,9 @@ class _AnimationDemoState extends State<AnimationDemo> {
   Timer timer;
   final int tickDurantion = 100;
   int currentTick = 0;
-  static const  int MIN_DROP_DURATION = 12, RANDOM_DROP_DURATION = 6;
+  static const int MAX_Y = 1000;//箱子Y轴生成的随机范围 越大Y轴上越分散
+  static const int BASE_SPEED = 100;
+  static const int RANDOM_DROP_DURATION = 5;
   static const int MIN_CHEST_SCALE = 60, RANDOM_CHEST_SCALE = 40;
 
   @override
@@ -47,17 +49,21 @@ class _AnimationDemoState extends State<AnimationDemo> {
 
   void addUFODropChest() {
     TreasureChestBean ufoDroped = new TreasureChestBean();
-    double x=180,y=100;
+    double x = 180, y = 100;
     ufoDroped.position = Offset(x, y);
-    ufoDroped.duration =
-        (MIN_DROP_DURATION + _random.nextInt(RANDOM_DROP_DURATION)) * 1000;
-    ufoDroped.scale = (MIN_CHEST_SCALE + _random.nextInt(RANDOM_CHEST_SCALE)) / 100;
-    ufoDroped.id=0;
-    ufoDroped.startValidMS=0;
-    double speed = (screenHeight - y) / (ufoDroped.duration);
-    ufoDroped.endValidMS=(screenHeight - y - CHEST_MAX_HEIGHT * ufoDroped.scale) ~/ speed;
-    ufoDroped.chestMaxHeight=CHEST_MAX_HEIGHT;
-    ufoDroped.chestMaxWidth=CHEST_MAX_WIDTH;
+    ufoDroped.scale =
+        (MIN_CHEST_SCALE + _random.nextInt(RANDOM_CHEST_SCALE)) / 100;
+    ufoDroped.id = 0;
+    ufoDroped.startValidMS = 0;
+    double distance = screenHeight - y;
+    int duration =
+        (distance ~/ BASE_SPEED + _random.nextInt(RANDOM_DROP_DURATION)) * 1000;
+    double actualSpeed = distance / duration;
+    ufoDroped.duration = duration;
+    ufoDroped.endValidMS =
+        (screenHeight - y - CHEST_MAX_HEIGHT * ufoDroped.scale) ~/ actualSpeed;
+    ufoDroped.chestMaxHeight = CHEST_MAX_HEIGHT;
+    ufoDroped.chestMaxWidth = CHEST_MAX_WIDTH;
     chestList.add(ufoDroped);
   }
 
@@ -66,16 +72,21 @@ class _AnimationDemoState extends State<AnimationDemo> {
     for (int i = 1; i <= 10; i++) {
       TreasureChestBean treasure = new TreasureChestBean();
       double x = _random.nextDouble() * (screenWidth - CHEST_MAX_WIDTH);
-      double y = _random.nextDouble() * screenHeight;
-      int duration =
-          (MIN_DROP_DURATION + _random.nextInt(RANDOM_DROP_DURATION)) * 1000;
-      double scale = (MIN_CHEST_SCALE + _random.nextInt(RANDOM_CHEST_SCALE)) / 100;
-      y = y / 2;
+      double y = _random.nextDouble() * MAX_Y;
+      double scale =
+          (MIN_CHEST_SCALE + _random.nextInt(RANDOM_CHEST_SCALE)) / 100;
+      // y = y / 2;
       y = -y - CHEST_MAX_HEIGHT;
       //unit d/millsecond
-      double speed = (screenHeight - y) / (duration);
-      int startValidMS = -y ~/ speed; //等价于(-y / speed).toInt()
-      int endValidMS = (screenHeight - y - CHEST_MAX_HEIGHT * scale) ~/ speed;
+      double distance = screenHeight - y;
+      int duration =
+          (distance ~/ BASE_SPEED + _random.nextInt(RANDOM_DROP_DURATION)) *
+              1000;
+      double actualSpeed = distance / duration;
+      print("speed:$actualSpeed");
+      int startValidMS = -y ~/ actualSpeed; //等价于(-y / speed).toInt()
+      int endValidMS =
+          (screenHeight - y - CHEST_MAX_HEIGHT * scale) ~/ actualSpeed;
       print("startValidMs:$startValidMS ,endValidMs:$endValidMS");
       print("y:$y,screenHeight:$screenHeight");
       treasure.position = Offset(x, y);
@@ -84,8 +95,8 @@ class _AnimationDemoState extends State<AnimationDemo> {
       treasure.id = i;
       treasure.startValidMS = startValidMS;
       treasure.endValidMS = endValidMS;
-      treasure.chestMaxHeight=CHEST_MAX_HEIGHT;
-      treasure.chestMaxWidth=CHEST_MAX_WIDTH;
+      treasure.chestMaxHeight = CHEST_MAX_HEIGHT;
+      treasure.chestMaxWidth = CHEST_MAX_WIDTH;
       chestList.add(treasure);
     }
     //按尺寸大小排序,为了达到大的盖住小的效果
@@ -211,8 +222,8 @@ class _AnimationDemoState extends State<AnimationDemo> {
       for (int i = 0; i < chestList.length; i++) {
         Offset newPosition = Offset(chestList[i].position.dx, screenHeight);
         chestList[i].position = newPosition;
-        if(chestList[i].id==0){
-          chestList[i].ufoDrop=true;
+        if (chestList[i].id == 0) {
+          chestList[i].ufoDrop = true;
         }
       }
     });

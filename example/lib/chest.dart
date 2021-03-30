@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:webplugindemo_example/treasurechest_bean.dart';
 
@@ -145,12 +146,21 @@ class _ChestWidgetState extends State<ChestWidget>
                 child: ScaleTransition(
                   scale: avatarScaleAnim,
                   alignment: Alignment.center,
-                  child: Image.asset(
-                    'avatar.png',
-                    width: avatarSize,
-                    height: avatarSize,
-                    fit: BoxFit.fitHeight,
-                    alignment: Alignment.center,
+                  child: CircleAvatar(
+                    foregroundImage : Image.asset(
+                        'treasurechest_avatarframe.png',
+                        width: avatarSize,
+                        height: avatarSize,
+                        fit: BoxFit.fitHeight,
+                        alignment: Alignment.center).image,
+                    radius: avatarSize / 2,
+                    backgroundImage: Image.asset(
+                      'avatar.png',
+                      width: avatarSize - 10,
+                      height: avatarSize - 10,
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.center,
+                    ).image,
                   ),
                 ),
               ),
