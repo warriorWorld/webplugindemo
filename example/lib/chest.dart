@@ -6,6 +6,7 @@ class ChestWidget extends StatefulWidget {
   TreasureChestBean chestBean;
 
   ChestWidget(TreasureChestBean bean) {
+    print("chest construct");
     chestBean = bean;
   }
 
@@ -27,11 +28,14 @@ class _ChestWidgetState extends State<ChestWidget>
   String chestAsset = 'assets/treasurechest.png';
   double chestWidth;
   double chestHeight;
-  double avatarSize = 60;
+  double avatarSize = 100;
+  AnimationController rotationController;
+  Animation<double> rotationAnim;
 
   @override
   void initState() {
     super.initState();
+    print("chest init");
     reset();
     chestScaleController =
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
@@ -66,6 +70,11 @@ class _ChestWidgetState extends State<ChestWidget>
     avatarOpacityAnim = Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(
         parent: animController,
         curve: Interval(0.9, 1, curve: Curves.decelerate)));
+
+    rotationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 2000));
+    rotationAnim = Tween<double>(begin: -0.06, end: 0.06).animate(
+        CurvedAnimation(parent: rotationController, curve: Curves.linear));
   }
 
   void open() {
@@ -76,12 +85,17 @@ class _ChestWidgetState extends State<ChestWidget>
   @override
   void didUpdateWidget(covariant ChestWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    print("chest update");
     if (widget.chestBean.opened) {
       open();
     }
     if (widget.chestBean.ufoDrop) {
       widget.chestBean.ufoDrop = false;
       ufoDropController.forward();
+    }
+    if (widget.chestBean.startDrop) {
+      widget.chestBean.startDrop = false;
+      rotationController.repeat(reverse: true);
     }
   }
 
@@ -136,7 +150,7 @@ class _ChestWidgetState extends State<ChestWidget>
               top: 0,
               child: FadeTransition(
                 opacity: chestOpacityAnim,
-                child: getChest(),
+                child: getUFOorNormalChest(),
               ),
             ),
             Positioned(
@@ -147,12 +161,13 @@ class _ChestWidgetState extends State<ChestWidget>
                   scale: avatarScaleAnim,
                   alignment: Alignment.center,
                   child: CircleAvatar(
-                    foregroundImage : Image.asset(
-                        'treasurechest_avatarframe.png',
-                        width: avatarSize,
-                        height: avatarSize,
-                        fit: BoxFit.fitHeight,
-                        alignment: Alignment.center).image,
+                    foregroundImage: Image.asset(
+                            'treasurechest_avatarframe.png',
+                            width: avatarSize,
+                            height: avatarSize,
+                            fit: BoxFit.fitHeight,
+                            alignment: Alignment.center)
+                        .image,
                     radius: avatarSize / 2,
                     backgroundImage: Image.asset(
                       'avatar.png',
@@ -171,25 +186,22 @@ class _ChestWidgetState extends State<ChestWidget>
     );
   }
 
-  Widget getChest() {
+  Widget getUFOorNormalChest() {
     if (widget.chestBean.id == 0) {
       return ScaleTransition(
         alignment: Alignment.topCenter,
         scale: ufoDropAnim,
-        child: ScaleTransition(
-          scale: chestScaleAnim,
-          alignment: Alignment.center,
-          child: Image.asset(
-            chestAsset,
-            width: chestWidth,
-            height: chestHeight,
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-          ),
-        ),
+        child: getChest(),
       );
     } else {
-      return ScaleTransition(
+      return getChest();
+    }
+  }
+
+  Widget getChest() {
+    return RotationTransition(
+      turns: rotationAnim,
+      child: ScaleTransition(
         scale: chestScaleAnim,
         alignment: Alignment.center,
         child: Image.asset(
@@ -199,7 +211,7 @@ class _ChestWidgetState extends State<ChestWidget>
           fit: BoxFit.contain,
           alignment: Alignment.center,
         ),
-      );
-    }
+      ),
+    );
   }
 }

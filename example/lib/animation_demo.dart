@@ -12,32 +12,54 @@ class AnimationDemo extends StatefulWidget {
   _AnimationDemoState createState() => _AnimationDemoState();
 }
 
-class _AnimationDemoState extends State<AnimationDemo> {
+class _AnimationDemoState extends State<AnimationDemo>
+    with SingleTickerProviderStateMixin {
   bool switchState = false;
   bool stopScroll = false;
   ScrollController listController = ScrollController();
   Random _random = new Random(DateTime.now().millisecondsSinceEpoch);
   List<TreasureChestBean> chestList = [];
-  double screenHeight;
-  double screenWidth;
-  static const double CHEST_MAX_WIDTH = 100;
-  static const double CHEST_MAX_HEIGHT = 120;
+  double screenHeight = 0;
+  double screenWidth = 0;
+  static const double CHEST_MAX_WIDTH = 150;
+  static const double CHEST_MAX_HEIGHT = 180;
   Timer timer;
-  final int tickDurantion = 100;
+  final int tickDurantion = 80;
   int currentTick = 0;
-  static const int MAX_Y = 1000;//箱子Y轴生成的随机范围 越大Y轴上越分散
+  static const int GAME_DURATION = 30;
+  int maxY = 1500; //箱子Y轴生成的随机范围 越大Y轴上越分散
   static const int BASE_SPEED = 100;
   static const int RANDOM_DROP_DURATION = 5;
   static const int MIN_CHEST_SCALE = 60, RANDOM_CHEST_SCALE = 40;
+  List<ChestWidget> chests = [];
+  double readyWidth = 200, readyHeight = 100;
+  double readyTop;
+  double countdownHeight = 200, countdownWidth = 100;
+  AnimationController countdownController;
+  Animation<double> scaleAnim;
+  String countdownImg = 'three.png';
 
   @override
   void initState() {
     super.initState();
+    initAnim();
     Future.delayed(Duration.zero, () {
       screenHeight = MediaQuery.of(context).size.height;
       screenWidth = MediaQuery.of(context).size.width;
+      maxY = BASE_SPEED * GAME_DURATION - screenHeight.toInt();
+      print("screen height:$screenHeight ,max y:$maxY");
+      readyTop = -readyHeight;
       initTreasureChests();
+      // initChests();
     });
+  }
+
+  void initAnim() {
+    countdownController = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 1000));
+    scaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: countdownController,
+        curve: Interval(0, 0.3, curve: Curves.decelerate)));
   }
 
   @override
@@ -69,10 +91,10 @@ class _AnimationDemoState extends State<AnimationDemo> {
 
   void initTreasureChests() {
     addUFODropChest();
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 15; i++) {
       TreasureChestBean treasure = new TreasureChestBean();
       double x = _random.nextDouble() * (screenWidth - CHEST_MAX_WIDTH);
-      double y = _random.nextDouble() * MAX_Y;
+      double y = _random.nextDouble() * maxY;
       double scale =
           (MIN_CHEST_SCALE + _random.nextInt(RANDOM_CHEST_SCALE)) / 100;
       // y = y / 2;
@@ -111,6 +133,10 @@ class _AnimationDemoState extends State<AnimationDemo> {
     });
   }
 
+  void initChests() {
+    chests = chestList.map((item) => new ChestWidget(item)).toList();
+  }
+
   void _reset() {
     setState(() {
       listController.jumpTo(0);
@@ -119,6 +145,9 @@ class _AnimationDemoState extends State<AnimationDemo> {
       timer.cancel();
       timer = null;
       currentTick = 0;
+      readyTop = -readyHeight;
+      countdownHeight = 200;
+      countdownWidth = 100;
     });
   }
 
@@ -144,7 +173,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
                 }
                 switchState = !switchState;
               },
-              child: Text("测试")),
+              child: Text("test")),
         ),
         Positioned(
           top: 30,
@@ -156,8 +185,31 @@ class _AnimationDemoState extends State<AnimationDemo> {
               onPressed: () {
                 _getOneValidChest();
               },
-              child: Text("抢答")),
+              child: Text("grab")),
         ),
+        AnimatedPositioned(
+            left: screenWidth / 2 - readyWidth / 2,
+            top: readyTop,
+            curve: Curves.bounceIn,
+            width: readyWidth,
+            height: readyHeight,
+            child: Image.asset(
+              'ready.png',
+              alignment: Alignment.topCenter,
+            ),
+            duration: Duration(milliseconds: 500)),
+        Positioned(
+            top: screenHeight / 2 - countdownHeight / 2,
+            left: screenWidth / 2 - countdownWidth / 2,
+            child: ScaleTransition(
+              scale: scaleAnim,
+              alignment: Alignment.center,
+              child: Image.asset(
+                countdownImg,
+                width: countdownWidth,
+                height: countdownHeight,
+              ),
+            )),
         Stack(
           children: chestList.map((item) => new ChestWidget(item)).toList(),
         )
@@ -177,7 +229,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
       }
     }
     if (validList.length == 0) {
-      Toast.show("没有宝箱可以抢!", context);
+      Toast.show("no valid chest!", context);
       return;
     }
     int randomI = _random.nextInt(validList.length);
@@ -198,12 +250,37 @@ class _AnimationDemoState extends State<AnimationDemo> {
   }
 
   void _firstScroll() {
-    listController
-        .animateTo(1500,
-            duration: Duration(milliseconds: 1800),
-            curve: Curves.easeInOutCubic)
-        .then((value) {
-      Future.delayed(Duration(seconds: 1)).then((value) => _secondScroll());
+    countdown();
+    listController.animateTo(1500,
+        duration: Duration(milliseconds: 1800), curve: Curves.easeInOutCubic);
+  }
+
+  void countdown() {
+    setState(() {
+      readyTop = 0;
+    });
+    countdownController.repeat();
+    Future.delayed(Duration(seconds: 1)).then((value) {
+      setState(() {
+        countdownImg = 'two.png';
+      });
+    });
+    Future.delayed(Duration(seconds: 2)).then((value) {
+      setState(() {
+        countdownImg = 'one.png';
+        readyTop = -readyHeight;
+      });
+    });
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      setState(() {
+        countdownWidth = 400;
+        countdownImg = 'go.png';
+      });
+      _secondScroll();
+    });
+    Future.delayed(Duration(seconds: 4)).then((value) {
+      countdownController.reset();
+      // countdownController.dispose();
     });
   }
 
@@ -222,6 +299,7 @@ class _AnimationDemoState extends State<AnimationDemo> {
       for (int i = 0; i < chestList.length; i++) {
         Offset newPosition = Offset(chestList[i].position.dx, screenHeight);
         chestList[i].position = newPosition;
+        chestList[i].startDrop = true;
         if (chestList[i].id == 0) {
           chestList[i].ufoDrop = true;
         }
