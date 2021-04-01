@@ -17,16 +17,39 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   double answerToolTop = -ANSWER_TOOL_HEIGHT;
   bool isRecordAnimReverse = false;
   List<StudentBean> studentList = [];
+  double studentsBgWidth = 0, studentsBgHeight = 150;
+  static const double AVATAR_SIZE = 70,
+      AVATAR_SPACE = 30,
+      AVATAR_RUN_SPACE = 15,
+      AVATAR_PADDING = 10;
 
   @override
   void initState() {
     super.initState();
     getStudentList();
     initAnim();
+    WidgetsBinding.instance.addPostFrameCallback((callback) {
+      initViewSize();
+    });
+  }
+
+  void initViewSize() {
+    studentsBgWidth = screenWidth - 50;
+    int rowCount, columnMaxCount;
+    columnMaxCount = studentsBgWidth ~/ (AVATAR_SPACE + AVATAR_SIZE);
+    rowCount = studentList.length ~/ columnMaxCount;
+    if (studentList.length % columnMaxCount > 0) {
+      rowCount++;
+    }
+    studentsBgHeight = rowCount * AVATAR_SIZE +
+        (rowCount - 1) * AVATAR_RUN_SPACE +
+        AVATAR_PADDING * 2;
+    print(
+        "column max count:$columnMaxCount,row count:$rowCount,bg height:$studentsBgHeight");
   }
 
   void getStudentList() {
-    for (int i = 0; i < 21; i++) {
+    for (int i = 0; i < 22; i++) {
       StudentBean student = StudentBean();
       student.avatar = getAssetsPath('avatar.png');
       student.score = i * 10;
@@ -93,7 +116,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         ),
         Positioned(
             bottom: 30,
-            left: screenWidth / 2 - 134 / 2,
+            left: screenWidth / 2 - 97 / 2,
             child: ScaleTransition(
               scale: recordScaleAnim,
               alignment: Alignment.center,
@@ -104,9 +127,73 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                 alignment: Alignment.bottomCenter,
               ),
             )),
-        Positioned(bottom: 30, child: Center(child: GridView()))
+        Positioned(
+          bottom: 30,
+          left: screenWidth / 2 - studentsBgWidth / 2,
+          width: studentsBgWidth,
+          height: studentsBgHeight,
+          child: Stack(
+            children: [
+              Container(
+                width: studentsBgWidth,
+                height: studentsBgHeight,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(50),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(AVATAR_PADDING),
+                child: Center(
+                  child: Wrap(
+                    spacing: AVATAR_SPACE,
+                    // gap between adjacent chips
+                    runSpacing: AVATAR_RUN_SPACE,
+                    // gap between lines
+                    alignment: WrapAlignment.center,
+                    runAlignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: List.generate(studentList.length, (index) {
+                      return CircleAvatar(
+                        foregroundImage: Image.asset(
+                          getAvatarFrame(index),
+                          width: AVATAR_SIZE,
+                          fit: BoxFit.contain,
+                          height: AVATAR_SIZE,
+                        ).image,
+                        radius: AVATAR_SIZE / 2,
+                        backgroundImage: Image.asset(
+                          studentList[index].avatar,
+                          width: AVATAR_SIZE - 20,
+                          height: AVATAR_SIZE - 20,
+                          alignment: Alignment.center,
+                          fit: BoxFit.cover,
+                        ).image,
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )
       ],
     );
+  }
+
+  String getAvatarFrame(int index) {
+    switch (index) {
+      case 0:
+        return getAssetsPath('avatar_frame_gold.png');
+      case 1:
+        return getAssetsPath('avatar_frame_silver.png');
+      case 2:
+        return getAssetsPath('avatar_frame_copper.png');
+      default:
+        return getAssetsPath('avatar_fame.png');
+    }
   }
 
   String getAssetsPath(String path) {
