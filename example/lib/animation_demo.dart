@@ -43,15 +43,19 @@ class _AnimationDemoState extends State<AnimationDemo>
   void initState() {
     super.initState();
     initAnim();
-    Future.delayed(Duration.zero, () {
-      screenHeight = MediaQuery.of(context).size.height;
-      screenWidth = MediaQuery.of(context).size.width;
+    WidgetsBinding.instance.addPostFrameCallback((callback) {
       maxY = BASE_SPEED * GAME_DURATION - screenHeight.toInt();
       print("screen height:$screenHeight ,max y:$maxY");
       readyTop = -readyHeight;
       initTreasureChests();
-      // initChests();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
   }
 
   void initAnim() {

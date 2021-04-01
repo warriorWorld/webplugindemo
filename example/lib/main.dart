@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:webplugindemo/webplugindemo.dart';
 import 'package:webplugindemo_example/animation_demo.dart';
 import 'package:webplugindemo_example/js_caller.dart';
+import 'package:webplugindemo_example/record/record_game.dart';
 
 int syncFibonacci(int n) {
   return n < 2 ? n : syncFibonacci(n - 2) + syncFibonacci(n - 1);
@@ -14,7 +15,7 @@ int syncFibonacci(int n) {
 void main() {
   runApp(MaterialApp(
     home: Scaffold(
-      body: new AnimationDemo(),
+      body: new RecordGame(),
     ),
   ));
 }
