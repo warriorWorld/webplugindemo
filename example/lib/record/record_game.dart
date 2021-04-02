@@ -18,10 +18,12 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   bool isRecordAnimReverse = false;
   List<StudentBean> studentList = [];
   double studentsBgWidth = 0, studentsBgHeight = 150;
-  static const double AVATAR_SIZE = 70,
-      AVATAR_SPACE = 30,
-      AVATAR_RUN_SPACE = 15,
-      AVATAR_PADDING = 10;
+  static const double AVATAR_SIZE = 70, //头像大小
+      AVATAR_SPACE = 15, //列间距
+      AVATAR_RUN_SPACE = 15, //行间距
+      AVATAR_PADDING = 15, //列表上下padding
+      AVATAR_ITEM_PADDING = 10, //item内部上下padding
+      AVATAR_ITEM_RUN_PADDING = 15; //item内部左右padding
 
   @override
   void initState() {
@@ -36,20 +38,23 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   void initViewSize() {
     studentsBgWidth = screenWidth - 50;
     int rowCount, columnMaxCount;
-    columnMaxCount = studentsBgWidth ~/ (AVATAR_SPACE + AVATAR_SIZE);
+    columnMaxCount = studentsBgWidth ~/
+        (AVATAR_SPACE + AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2);
     rowCount = studentList.length ~/ columnMaxCount;
     if (studentList.length % columnMaxCount > 0) {
       rowCount++;
     }
+    //行数*头像高度+行间距*(行数-1)+上下padding+item内部上下padding
     studentsBgHeight = rowCount * AVATAR_SIZE +
         (rowCount - 1) * AVATAR_RUN_SPACE +
-        AVATAR_PADDING * 2;
+        AVATAR_PADDING * 2 +
+        rowCount * AVATAR_ITEM_PADDING * 2;
     print(
         "column max count:$columnMaxCount,row count:$rowCount,bg height:$studentsBgHeight");
   }
 
   void getStudentList() {
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 21; i++) {
       StudentBean student = StudentBean();
       student.avatar = getAssetsPath('avatar.png');
       student.score = i * 10;
@@ -156,22 +161,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                     runAlignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: List.generate(studentList.length, (index) {
-                      return CircleAvatar(
-                        foregroundImage: Image.asset(
-                          getAvatarFrame(index),
-                          width: AVATAR_SIZE,
-                          fit: BoxFit.contain,
-                          height: AVATAR_SIZE,
-                        ).image,
-                        radius: AVATAR_SIZE / 2,
-                        backgroundImage: Image.asset(
-                          studentList[index].avatar,
-                          width: AVATAR_SIZE - 20,
-                          height: AVATAR_SIZE - 20,
-                          alignment: Alignment.center,
-                          fit: BoxFit.cover,
-                        ).image,
-                      );
+                      return getStudentItemTile(index);
                     }),
                   ),
                 ),
@@ -181,6 +171,92 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         )
       ],
     );
+  }
+
+  Widget getStudentItemTile(int index) {
+    return Stack(alignment: Alignment.center, children: [
+      SizedBox(
+        height: AVATAR_SIZE + AVATAR_ITEM_PADDING * 2,
+        width: AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2,
+      ),
+      CircleAvatar(
+        radius: getAvatarRadius(index),
+        backgroundImage: Image.asset(
+          studentList[index].avatar,
+          width: AVATAR_SIZE,
+          height: AVATAR_SIZE,
+          alignment: Alignment.center,
+          fit: BoxFit.cover,
+        ).image,
+      ),
+      Image.asset(
+        getAvatarFrame(index),
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE,
+        fit: BoxFit.contain,
+      ),
+      Positioned(
+        bottom: 0,
+        child: Stack(alignment: Alignment.center, children: [
+          Image.asset(getAssetsPath('name_bg_orange.png')),
+          Text(
+            studentList[index].name,
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          )
+        ]),
+        width: 70,
+        height: 20,
+      ),
+      Positioned(
+          top: 0, right: 0, child: getScoreWidget(studentList[index].score))
+    ]);
+  }
+
+  Widget getScoreWidget(int score) {
+    String s = '+' + score.toString();
+    List<String> scores = s.split('');
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(scores.length, (index) {
+        return Image.asset(
+          getSingleFigureImg(scores[index]),
+          width: 15,
+          height: 20,
+          fit: BoxFit.fill,
+          alignment: Alignment.center,
+        );
+      }),
+    );
+  }
+
+  String getSingleFigureImg(String s) {
+    switch (s) {
+      case '+':
+        return getAssetsPath('treasurechest_score_add.png');
+      case '0':
+        return getAssetsPath('treasurechest_score_0.png');
+      case '1':
+        return getAssetsPath('treasurechest_score_1.png');
+      case '2':
+        return getAssetsPath('treasurechest_score_2.png');
+      case '3':
+        return getAssetsPath('treasurechest_score_3.png');
+      case '4':
+        return getAssetsPath('treasurechest_score_4.png');
+      case '5':
+        return getAssetsPath('treasurechest_score_5.png');
+      case '6':
+        return getAssetsPath('treasurechest_score_6.png');
+      case '7':
+        return getAssetsPath('treasurechest_score_7.png');
+      case '8':
+        return getAssetsPath('treasurechest_score_8.png');
+      case '9':
+        return getAssetsPath('treasurechest_score_9.png');
+      default:
+        throw Exception('illegal parameter');
+    }
   }
 
   String getAvatarFrame(int index) {
@@ -193,6 +269,19 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         return getAssetsPath('avatar_frame_copper.png');
       default:
         return getAssetsPath('avatar_fame.png');
+    }
+  }
+
+  double getAvatarRadius(int index) {
+    switch (index) {
+      case 0:
+        return (AVATAR_SIZE - 12.5) / 2;
+      case 1:
+        return (AVATAR_SIZE - 12.5) / 2;
+      case 2:
+        return (AVATAR_SIZE - 14) / 2;
+      default:
+        return (AVATAR_SIZE - 10) / 2;
     }
   }
 
