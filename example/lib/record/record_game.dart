@@ -21,7 +21,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   static const double AVATAR_SIZE = 70, //头像大小
       AVATAR_SPACE = 15, //列间距
       AVATAR_RUN_SPACE = 15, //行间距
-      AVATAR_PADDING = 15, //列表上下padding
+      AVATAR_PADDING = 30, //列表上下padding
       AVATAR_ITEM_PADDING = 10, //item内部上下padding
       AVATAR_ITEM_RUN_PADDING = 15; //item内部左右padding
 
@@ -88,6 +88,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: Alignment.center,
       children: [
         Image.asset(
           getAssetsPath('bg_class.png'),
@@ -167,6 +168,15 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                 ),
               ),
             ],
+          ),
+        ),
+        Positioned(
+          bottom: studentsBgHeight + 10,
+          child: Image.asset(
+            getAssetsPath('mvp.png'),
+            width: 300,
+            height: 100,
+            fit: BoxFit.fill,
           ),
         )
       ],
