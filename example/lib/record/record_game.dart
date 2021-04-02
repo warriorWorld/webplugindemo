@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webplugindemo_example/record/student_bean.dart';
 
+enum AvatarAnimType { SCORE, AVATAR, NAME }
+
 class RecordGame extends StatefulWidget {
   @override
   _RecordGameState createState() => _RecordGameState();
@@ -26,6 +28,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       AVATAR_ITEM_RUN_PADDING = 15; //item内部左右padding
   AnimationController studentListAnimController;
   Animation<double> studentListScaleAnim, mvpScaleAnim;
+  int studentAnimDuration = 1500;
 
   @override
   void initState() {
@@ -63,6 +66,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       student.name = 'student$i';
       studentList.add(student);
     }
+    studentAnimDuration = 200 * studentList.length;
   }
 
   void initAnim() {
@@ -71,15 +75,14 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     recordScaleAnim = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(parent: recordAnimController, curve: Curves.bounceOut));
 
-    studentListAnimController = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 1000));
+    studentListAnimController = AnimationController(vsync: this);
     studentListScaleAnim = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(
             parent: studentListAnimController,
-            curve: Interval(0, 0.5, curve: Curves.bounceOut)));
+            curve: Interval(0, 0.1, curve: Curves.bounceOut)));
     mvpScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: studentListAnimController,
-        curve: Interval(0.5, 1, curve: Curves.bounceOut)));
+        curve: Interval(0.1, 0.2, curve: Curves.bounceOut)));
   }
 
   void startRecord() {
@@ -95,11 +98,16 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         answerToolTop = -ANSWER_TOOL_HEIGHT;
       });
     });
+  }
+
+  void showAnswerResult() {
+    studentListAnimController.duration =
+        Duration(milliseconds: 500 + studentAnimDuration);
     Future.delayed(Duration(seconds: 4)).then((value) {
       studentListAnimController.forward();
     });
-    // Future.delayed(Duration(seconds: 7))
-    //     .then((value) => studentListAnimController.reverse());
+    Future.delayed(Duration(seconds: 10))
+        .then((value) => studentListAnimController.reverse(from: 0.2));
   }
 
   @override
@@ -122,6 +130,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
               color: Colors.blue,
               onPressed: () {
                 startRecord();
+                showAnswerResult();
               },
               child: Text("test")),
         ),
@@ -214,54 +223,104 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         height: AVATAR_SIZE + AVATAR_ITEM_PADDING * 2,
         width: AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2,
       ),
-      CircleAvatar(
-        radius: getAvatarRadius(index),
-        backgroundImage: Image.asset(
-          studentList[index].avatar,
-          width: AVATAR_SIZE,
-          height: AVATAR_SIZE,
+      ScaleTransition(
+        scale: getAvatarAnim(index, AvatarAnimType.AVATAR),
+        child: Stack(
           alignment: Alignment.center,
-          fit: BoxFit.cover,
-        ).image,
-      ),
-      Image.asset(
-        getAvatarFrame(index),
-        width: AVATAR_SIZE,
-        height: AVATAR_SIZE,
-        fit: BoxFit.contain,
+          children: [
+            CircleAvatar(
+              radius: getAvatarRadius(index),
+              backgroundImage: Image.asset(
+                studentList[index].avatar,
+                width: AVATAR_SIZE,
+                height: AVATAR_SIZE,
+                alignment: Alignment.center,
+                fit: BoxFit.cover,
+              ).image,
+            ),
+            Image.asset(
+              getAvatarFrame(index),
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              fit: BoxFit.contain,
+            )
+          ],
+        ),
       ),
       Positioned(
         bottom: 0,
-        child: Stack(alignment: Alignment.center, children: [
-          Image.asset(getNameFrame(index)),
-          Text(
-            studentList[index].name,
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          )
-        ]),
+        child: ScaleTransition(
+          scale: getAvatarAnim(index, AvatarAnimType.NAME),
+          child: Stack(alignment: Alignment.center, children: [
+            Image.asset(getNameFrame(index)),
+            Text(
+              studentList[index].name,
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            )
+          ]),
+        ),
         width: 70,
         height: 20,
       ),
       Positioned(
-          top: 0, right: 0, child: getScoreWidget(studentList[index].score))
+          top: 0,
+          right: 0,
+          child: getScoreWidget(index, studentList[index].score))
     ]);
   }
 
-  Widget getScoreWidget(int score) {
+  Animation<double> getAvatarAnim(int index, AvatarAnimType type) {
+    double begin, end;
+    //至少等背景出来后才开始所以不是1
+    double beginEven = 0.85 / studentList.length;
+    begin = 0.15 + index * beginEven;
+    //实现交替动画效果
+    double endEven = 1.2 / studentList.length;
+    end = begin + endEven;
+    if (end > 1) {
+      end = 1;
+    }
+    //单个item再细分3部分动画
+    double singleDuration = end - begin;
+    double beginEven1 = singleDuration / 3;
+    double endEven1 = endEven / 1.35 / 3;
+    switch (type) {
+      case AvatarAnimType.AVATAR:
+        break;
+      case AvatarAnimType.NAME:
+        begin = begin + beginEven1;
+        break;
+      case AvatarAnimType.SCORE:
+        begin = begin + beginEven1 * 2;
+        break;
+    }
+    end = begin + endEven1;
+    if (end > 1) {
+      end = 1;
+    }
+    return Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: studentListAnimController,
+        curve: Interval(begin, end, curve: Curves.bounceOut)));
+  }
+
+  Widget getScoreWidget(int index, int score) {
     String s = '+' + score.toString();
     List<String> scores = s.split('');
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(scores.length, (index) {
-        return Image.asset(
-          getSingleFigureImg(scores[index]),
-          width: 15,
-          height: 20,
-          fit: BoxFit.fill,
-          alignment: Alignment.center,
-        );
-      }),
+    return ScaleTransition(
+      scale: getAvatarAnim(index, AvatarAnimType.SCORE),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(scores.length, (index) {
+          return Image.asset(
+            getSingleFigureImg(scores[index]),
+            width: 15,
+            height: 20,
+            fit: BoxFit.fill,
+            alignment: Alignment.center,
+          );
+        }),
+      ),
     );
   }
 
