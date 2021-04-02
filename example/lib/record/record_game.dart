@@ -109,8 +109,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     Future.delayed(Duration(seconds: 4)).then((value) {
       getStudentList(_random.nextInt(32));
       initViewSize();
-      setState(() {
-      });
+      setState(() {});
       studentListAnimController.forward();
     });
     Future.delayed(Duration(seconds: 10))
@@ -123,6 +122,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       alignment: Alignment.center,
       children: [
         Image.asset(
+          //背景
           getAssetsPath('bg_class.png'),
           width: screenWidth,
           height: screenHeight,
@@ -142,6 +142,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
               child: Text("test")),
         ),
         AnimatedPositioned(
+          //答题器
           right: 30,
           duration: Duration(milliseconds: RECORD_ANIM_DURATION),
           curve: isRecordAnimReverse ? Curves.bounceIn : Curves.bounceOut,
@@ -154,6 +155,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
           ),
         ),
         Positioned(
+            //录音
             bottom: 30,
             left: screenWidth / 2 - 97 / 2,
             child: ScaleTransition(
@@ -166,6 +168,15 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                 alignment: Alignment.bottomCenter,
               ),
             )),
+        getAnswerResultWidget()
+      ],
+    );
+  }
+
+  Widget getAnswerResultWidget() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
         Positioned(
           bottom: 30,
           left: screenWidth / 2 - studentsBgWidth / 2,
