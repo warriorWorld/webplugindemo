@@ -26,8 +26,8 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       AVATAR_SPACE = 15, //列间距
       AVATAR_RUN_SPACE = 15, //行间距
       AVATAR_PADDING = 30, //列表上下padding
-      AVATAR_ITEM_PADDING = 10, //item内部上下padding
-      AVATAR_ITEM_RUN_PADDING = 15; //item内部左右padding
+      AVATAR_ITEM_RUN_PADDING = 10, //item内部上下padding
+      AVATAR_ITEM_PADDING = 15; //item内部左右padding
   AnimationController studentListAnimController;
   Animation<double> studentListScaleAnim, mvpScaleAnim;
   int studentAnimDuration = 1500;
@@ -46,16 +46,21 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     studentsBgWidth = screenWidth - 50;
     int rowCount, columnMaxCount;
     columnMaxCount = studentsBgWidth ~/
-        (AVATAR_SPACE + AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2);
+        (AVATAR_SPACE + AVATAR_SIZE + AVATAR_ITEM_PADDING * 2);
     rowCount = studentList.length ~/ columnMaxCount;
     if (studentList.length % columnMaxCount > 0) {
       rowCount++;
+    }
+    if (studentList.length < columnMaxCount) {
+      studentsBgWidth = (AVATAR_SPACE + AVATAR_SIZE + AVATAR_ITEM_PADDING * 2) *
+          (studentList.length + 1);
+      print("bg width:$studentsBgWidth ,lenth:${studentList.length}");
     }
     //行数*头像高度+行间距*(行数-1)+上下padding+item内部上下padding
     studentsBgHeight = rowCount * AVATAR_SIZE +
         (rowCount - 1) * AVATAR_RUN_SPACE +
         AVATAR_PADDING * 2 +
-        rowCount * AVATAR_ITEM_PADDING * 2;
+        rowCount * AVATAR_ITEM_RUN_PADDING * 2;
     print(
         "column max count:$columnMaxCount,row count:$rowCount,bg height:$studentsBgHeight");
   }
@@ -179,7 +184,6 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       children: [
         Positioned(
           bottom: 30,
-          left: screenWidth / 2 - studentsBgWidth / 2,
           width: studentsBgWidth,
           height: studentsBgHeight,
           child: ScaleTransition(
@@ -238,8 +242,8 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   Widget getStudentItemTile(int index) {
     return Stack(alignment: Alignment.center, children: [
       SizedBox(
-        height: AVATAR_SIZE + AVATAR_ITEM_PADDING * 2,
-        width: AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2,
+        height: AVATAR_SIZE + AVATAR_ITEM_RUN_PADDING * 2,
+        width: AVATAR_SIZE + AVATAR_ITEM_PADDING * 2,
       ),
       ScaleTransition(
         scale: getAvatarAnim(index, AvatarAnimType.AVATAR),
