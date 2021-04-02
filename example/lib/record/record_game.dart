@@ -24,6 +24,8 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       AVATAR_PADDING = 30, //列表上下padding
       AVATAR_ITEM_PADDING = 10, //item内部上下padding
       AVATAR_ITEM_RUN_PADDING = 15; //item内部左右padding
+  AnimationController studentListAnimController;
+  Animation<double> studentListScaleAnim, mvpScaleAnim;
 
   @override
   void initState() {
@@ -68,6 +70,16 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         vsync: this, duration: Duration(milliseconds: RECORD_ANIM_DURATION));
     recordScaleAnim = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(parent: recordAnimController, curve: Curves.bounceOut));
+
+    studentListAnimController = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 1000));
+    studentListScaleAnim = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+            parent: studentListAnimController,
+            curve: Interval(0, 0.5, curve: Curves.bounceOut)));
+    mvpScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: studentListAnimController,
+        curve: Interval(0.5, 1, curve: Curves.bounceOut)));
   }
 
   void startRecord() {
@@ -83,6 +95,11 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         answerToolTop = -ANSWER_TOOL_HEIGHT;
       });
     });
+    Future.delayed(Duration(seconds: 4)).then((value) {
+      studentListAnimController.forward();
+    });
+    // Future.delayed(Duration(seconds: 7))
+    //     .then((value) => studentListAnimController.reverse());
   }
 
   @override
@@ -138,45 +155,53 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
           left: screenWidth / 2 - studentsBgWidth / 2,
           width: studentsBgWidth,
           height: studentsBgHeight,
-          child: Stack(
-            children: [
-              Container(
-                width: studentsBgWidth,
-                height: studentsBgHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(50),
+          child: ScaleTransition(
+            scale: studentListScaleAnim,
+            alignment: Alignment.center,
+            child: Stack(
+              children: [
+                Container(
+                  width: studentsBgWidth,
+                  height: studentsBgHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(50),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(AVATAR_PADDING),
-                child: Center(
-                  child: Wrap(
-                    spacing: AVATAR_SPACE,
-                    // gap between adjacent chips
-                    runSpacing: AVATAR_RUN_SPACE,
-                    // gap between lines
-                    alignment: WrapAlignment.center,
-                    runAlignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: List.generate(studentList.length, (index) {
-                      return getStudentItemTile(index);
-                    }),
+                Padding(
+                  padding: EdgeInsets.all(AVATAR_PADDING),
+                  child: Center(
+                    child: Wrap(
+                      spacing: AVATAR_SPACE,
+                      // gap between adjacent chips
+                      runSpacing: AVATAR_RUN_SPACE,
+                      // gap between lines
+                      alignment: WrapAlignment.center,
+                      runAlignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: List.generate(studentList.length, (index) {
+                        return getStudentItemTile(index);
+                      }),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Positioned(
           bottom: studentsBgHeight + 10,
-          child: Image.asset(
-            getAssetsPath('mvp.png'),
-            width: 300,
-            height: 100,
-            fit: BoxFit.fill,
+          child: ScaleTransition(
+            scale: mvpScaleAnim,
+            alignment: Alignment.center,
+            child: Image.asset(
+              getAssetsPath('mvp.png'),
+              width: 300,
+              height: 100,
+              fit: BoxFit.fill,
+            ),
           ),
         )
       ],
@@ -208,7 +233,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       Positioned(
         bottom: 0,
         child: Stack(alignment: Alignment.center, children: [
-          Image.asset(getAssetsPath('name_bg_orange.png')),
+          Image.asset(getNameFrame(index)),
           Text(
             studentList[index].name,
             style: TextStyle(color: Colors.white, fontSize: 12),
@@ -279,6 +304,19 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         return getAssetsPath('avatar_frame_copper.png');
       default:
         return getAssetsPath('avatar_fame.png');
+    }
+  }
+
+  String getNameFrame(int index) {
+    switch (index) {
+      case 0:
+        return getAssetsPath('name_bg_orange.png');
+      case 1:
+        return getAssetsPath('name_bg_blue.png');
+      case 2:
+        return getAssetsPath('name_bg_red.png');
+      default:
+        return getAssetsPath('name_bg_purple.png');
     }
   }
 
