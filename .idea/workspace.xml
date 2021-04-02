@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3604282e-057e-47f1-a4ca-d5fa7a781ce0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/record/record_game.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/record/record_game.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:webplugindemo_example/record/student_bean.dart';
 
@@ -29,11 +31,11 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   AnimationController studentListAnimController;
   Animation<double> studentListScaleAnim, mvpScaleAnim;
   int studentAnimDuration = 1500;
+  Random _random = new Random(DateTime.now().millisecondsSinceEpoch);
 
   @override
   void initState() {
     super.initState();
-    getStudentList();
     initAnim();
     WidgetsBinding.instance.addPostFrameCallback((callback) {
       initViewSize();
@@ -58,8 +60,9 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         "column max count:$columnMaxCount,row count:$rowCount,bg height:$studentsBgHeight");
   }
 
-  void getStudentList() {
-    for (int i = 0; i < 21; i++) {
+  void getStudentList(int lenth) {
+    studentList.clear();
+    for (int i = 0; i < lenth; i++) {
       StudentBean student = StudentBean();
       student.avatar = getAssetsPath('avatar.png');
       student.score = i * 10;
@@ -67,6 +70,8 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       studentList.add(student);
     }
     studentAnimDuration = 200 * studentList.length;
+    studentListAnimController.duration =
+        Duration(milliseconds: 500 + studentAnimDuration);
   }
 
   void initAnim() {
@@ -101,9 +106,11 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   }
 
   void showAnswerResult() {
-    studentListAnimController.duration =
-        Duration(milliseconds: 500 + studentAnimDuration);
     Future.delayed(Duration(seconds: 4)).then((value) {
+      getStudentList(_random.nextInt(32));
+      initViewSize();
+      setState(() {
+      });
       studentListAnimController.forward();
     });
     Future.delayed(Duration(seconds: 10))
