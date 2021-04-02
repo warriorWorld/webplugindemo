@@ -25,11 +25,13 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   static const double AVATAR_SIZE = 70, //头像大小
       AVATAR_SPACE = 15, //列间距
       AVATAR_RUN_SPACE = 15, //行间距
-      AVATAR_PADDING = 30, //列表上下padding
+      AVATAR_LIST_PADDING = 30, //列表总的PADDING
       AVATAR_ITEM_RUN_PADDING = 10, //item内部上下padding
       AVATAR_ITEM_PADDING = 15; //item内部左右padding
   AnimationController studentListAnimController;
   Animation<double> studentListScaleAnim, mvpScaleAnim;
+  AnimationController allWrongAnimController;
+  Animation<double> allWrongScaleAnim;
   int studentAnimDuration = 1500;
   Random _random = new Random(DateTime.now().millisecondsSinceEpoch);
 
@@ -38,11 +40,11 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     super.initState();
     initAnim();
     WidgetsBinding.instance.addPostFrameCallback((callback) {
-      initViewSize();
+      initStudentBgSize();
     });
   }
 
-  void initViewSize() {
+  void initStudentBgSize() {
     studentsBgWidth = screenWidth - 50;
     int rowCount, columnMaxCount;
     columnMaxCount = studentsBgWidth ~/
@@ -53,13 +55,14 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     }
     if (studentList.length < columnMaxCount) {
       studentsBgWidth = (AVATAR_SPACE + AVATAR_SIZE + AVATAR_ITEM_PADDING * 2) *
-          (studentList.length + 1);
+              studentList.length +
+          AVATAR_LIST_PADDING * 2;
       print("bg width:$studentsBgWidth ,lenth:${studentList.length}");
     }
     //行数*头像高度+行间距*(行数-1)+上下padding+item内部上下padding
     studentsBgHeight = rowCount * AVATAR_SIZE +
         (rowCount - 1) * AVATAR_RUN_SPACE +
-        AVATAR_PADDING * 2 +
+        AVATAR_LIST_PADDING * 2 +
         rowCount * AVATAR_ITEM_RUN_PADDING * 2;
     print(
         "column max count:$columnMaxCount,row count:$rowCount,bg height:$studentsBgHeight");
@@ -93,6 +96,11 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     mvpScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: studentListAnimController,
         curve: Interval(0.1, 0.2, curve: Curves.bounceOut)));
+
+    allWrongAnimController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    allWrongScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: allWrongAnimController, curve: Curves.bounceOut));
   }
 
   void startRecord() {
@@ -113,12 +121,21 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   void showAnswerResult() {
     Future.delayed(Duration(seconds: 4)).then((value) {
       getStudentList(_random.nextInt(32));
-      initViewSize();
-      setState(() {});
-      studentListAnimController.forward();
+      if (studentList == null || studentList.length == 0) {
+        allWrongAnimController.forward();
+      } else {
+        initStudentBgSize();
+        setState(() {});
+        studentListAnimController.forward();
+      }
     });
-    Future.delayed(Duration(seconds: 10))
-        .then((value) => studentListAnimController.reverse(from: 0.2));
+    Future.delayed(Duration(seconds: 10)).then((value) {
+      if (studentList == null || studentList.length == 0) {
+        allWrongAnimController.reverse();
+      } else {
+        studentListAnimController.reverse(from: 0.2);
+      }
+    });
   }
 
   @override
@@ -179,6 +196,58 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   }
 
   Widget getAnswerResultWidget() {
+    if (studentList == null || studentList.length == 0) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+              bottom: 30,
+              child: ScaleTransition(
+                scale: allWrongScaleAnim,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: screenWidth - 50,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[50],
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(100),
+                        ),
+                      ),
+                    ),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Image.asset(
+                        getAssetsPath('tear_l.png'),
+                        width: 50,
+                        height: 50,
+                      ),
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        'Nobody is Correct',
+                        style: TextStyle(
+                            fontSize: 45,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 91, 80, 64)),
+                      ),
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Image.asset(
+                        getAssetsPath('tear_r.png'),
+                        width: 50,
+                        height: 50,
+                      ),
+                    ])
+                  ],
+                ),
+              ))
+        ],
+      );
+    }
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -202,7 +271,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(AVATAR_PADDING),
+                  padding: EdgeInsets.all(AVATAR_LIST_PADDING),
                   child: Center(
                     child: Wrap(
                       spacing: AVATAR_SPACE,
