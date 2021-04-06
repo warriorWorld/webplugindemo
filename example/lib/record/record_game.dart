@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -34,6 +35,10 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   Animation<double> allWrongScaleAnim;
   int studentAnimDuration = 1500;
   Random _random = new Random(DateTime.now().millisecondsSinceEpoch);
+  String allWrongText = 'Nobody is Correct';
+  Animation<double> tearOpacityAnim;
+
+  // List<Widget> studentWidgets = [];
 
   @override
   void initState() {
@@ -97,10 +102,14 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
         parent: studentListAnimController,
         curve: Interval(0.1, 0.2, curve: Curves.bounceOut)));
 
-    allWrongAnimController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    allWrongAnimController = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 2000));
     allWrongScaleAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-        parent: allWrongAnimController, curve: Curves.bounceOut));
+        parent: allWrongAnimController,
+        curve: Interval(0, 0.2, curve: Curves.bounceOut)));
+    tearOpacityAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: allWrongAnimController,
+        curve: Interval(0.8, 1, curve: Curves.easeIn)));
   }
 
   void startRecord() {
@@ -109,33 +118,57 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     setState(() {
       answerToolTop = 10;
     });
-    Future.delayed(Duration(seconds: 3)).then((value) {
-      isRecordAnimReverse = true;
-      recordAnimController.reverse();
-      setState(() {
-        answerToolTop = -ANSWER_TOOL_HEIGHT;
-      });
+  }
+
+  void hideRecord() {
+    isRecordAnimReverse = true;
+    recordAnimController.reverse();
+    setState(() {
+      answerToolTop = -ANSWER_TOOL_HEIGHT;
     });
   }
 
   void showAnswerResult() {
-    Future.delayed(Duration(seconds: 4)).then((value) {
-      getStudentList(_random.nextInt(32));
-      if (studentList == null || studentList.length == 0) {
-        allWrongAnimController.forward();
-      } else {
-        initStudentBgSize();
-        setState(() {});
-        studentListAnimController.forward();
+    // getStudentList(_random.nextInt(12));
+    // initStudentItems();
+    if (studentList == null || studentList.length == 0) {
+      showAllWrongResult();
+    } else {
+      initStudentBgSize();
+      setState(() {});
+      studentListAnimController.forward();
+    }
+  }
+
+  void showAllWrongResult() {
+    int index = 0;
+    String temp = allWrongText;
+    allWrongAnimController.forward();
+    Timer timer = new Timer.periodic(new Duration(milliseconds: 80), (timer) {
+      if (index > temp.length) {
+        timer.cancel();
+        return;
       }
+      setState(() {
+        allWrongText = temp.substring(0, index + 1);
+      });
+      index++;
     });
-    Future.delayed(Duration(seconds: 10)).then((value) {
-      if (studentList == null || studentList.length == 0) {
-        allWrongAnimController.reverse();
-      } else {
-        studentListAnimController.reverse(from: 0.2);
-      }
-    });
+  }
+
+  // void initStudentItems() {
+  //   studentWidgets.clear();
+  //   for (int i = 0; i < studentList.length; i++) {
+  //     studentWidgets.add(getStudentItemTile(i));
+  //   }
+  // }
+
+  void hideAnswerResult() {
+    if (studentList == null || studentList.length == 0) {
+      allWrongAnimController.reverse(from: 0.15);
+    } else {
+      studentListAnimController.reverse(from: 0.2);
+    }
   }
 
   @override
@@ -158,8 +191,16 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
               height: 50,
               color: Colors.blue,
               onPressed: () {
-                startRecord();
+                // startRecord();
+                // Future.delayed(Duration(seconds: 3)).then((value) {
+                //   hideRecord();
+                // });
+                // Future.delayed(Duration(seconds: 4)).then((value) {
                 showAnswerResult();
+                // });
+                Future.delayed(Duration(seconds: 3)).then((value) {
+                  hideAnswerResult();
+                });
               },
               child: Text("test")),
         ),
@@ -198,6 +239,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
   Widget getAnswerResultWidget() {
     if (studentList == null || studentList.length == 0) {
       return Stack(
+        //无人答对
         alignment: Alignment.center,
         children: [
           Positioned(
@@ -218,28 +260,38 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
                       ),
                     ),
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Image.asset(
-                        getAssetsPath('tear_l.png'),
-                        width: 50,
-                        height: 50,
+                      FadeTransition(
+                        opacity: tearOpacityAnim,
+                        child: Image.asset(
+                          getAssetsPath('tear_l.png'),
+                          width: 50,
+                          height: 50,
+                        ),
                       ),
                       SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        'Nobody is Correct',
-                        style: TextStyle(
-                            fontSize: 45,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 91, 80, 64)),
+                      Container(
+                        width: 360,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          allWrongText,
+                          style: TextStyle(
+                              fontSize: 45,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(255, 91, 80, 64)),
+                        ),
                       ),
                       SizedBox(
                         width: 15,
                       ),
-                      Image.asset(
-                        getAssetsPath('tear_r.png'),
-                        width: 50,
-                        height: 50,
+                      FadeTransition(
+                        opacity: tearOpacityAnim,
+                        child: Image.asset(
+                          getAssetsPath('tear_r.png'),
+                          width: 50,
+                          height: 50,
+                        ),
                       ),
                     ])
                   ],
@@ -249,6 +301,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
       );
     }
     return Stack(
+      //答对学生列表
       alignment: Alignment.center,
       children: [
         Positioned(
@@ -391,7 +444,7 @@ class _RecordGameState extends State<RecordGame> with TickerProviderStateMixin {
     }
     return Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: studentListAnimController,
-        curve: Interval(begin, end, curve: Curves.bounceOut)));
+        curve: Interval(begin, end, curve: Curves.elasticInOut)));
   }
 
   Widget getScoreWidget(int index, int score) {
